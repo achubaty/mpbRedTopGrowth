@@ -1,0 +1,3 @@
+"file" "checksum" "algorithm"
+"BooneCurveData2.csv" "f5e9e6d1eecb82a1" "xxhash64"
+"studyArea.kml" "e84cdbaa4aec590d" "xxhash64"

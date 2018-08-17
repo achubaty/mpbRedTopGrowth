@@ -1,0 +1,64 @@
+---
+title: "mpbRedTopGrowth"
+author:
+  - "Alex M. Chubaty"
+  - "Barry J. Cooke"
+  - "Eliot J. B. McIntire"
+date: "February 5, 2018"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+bibliography:
+  - ../../bibliography.bib
+---
+
+### `mpbRedTopGrowth`
+
+Recruitment is an annual process, with the inter-annual recruitment function taking a variety of possible forms, depending who one takes as an authority on the question.
+@Berryman:1979bs was an early pioneer who inspired much work in the area, and there are several possible interpretations of the data he used from Glacier and Yellowstone National Parks in Montana (MT) and Wyoming (WY) the 1960s.
+Consequently, the module offers the option of using several possible interpretations (Berryman 1979 fit, Berryman 1979 forced, Boone et al. 2011 [current default]).
+Additional options are forthcoming at the time of writing.
+
+@Raffa:1983fe provided definitive laboratory proof of Berryman's [-@Berryman:1979bs] hypothesis that the recruitment curve for mountain pine beetle took the form of an inverted parabola.
+There is only one Canadian field data set that captures the rising phase of recruitment, the so-called 'cooperation curve' [@Boone:2011fr].
+Meanwhile, @Cooke:2017fem showed how this cooperation curve could be "hybridized"" with the down-sloping "competition curve" of @MacQuarrie:2011fr which was also derived from Rocky Mountain region field data.
+If the two curves are wholly orthogonal, the parameterized up-sloping co-operation curve can be multiplied by the parameterized down-sloping competition curve, to yield a generation recruitment curve.
+
+![](modules/mpbRedTopGrowth/growthCurves_Box1_Cooke2013.png)
+
+Box 1 is drawn from Cooke (2013) and depicts the derivation of the generation recruitment curve used as the default population growth function in our simulation model.
+The base case for a well-defended pine tree is shown in panel (a).
+In panel (a) the co-operation curve is steep, because the tree is well-equipped to pitch out beetles when they are attacking at low density.
+When they are attacking at high density, the attack is successful and net recruitment is positive.
+The red curve comes from @Boone:2011fr and relates to probability of successful colonization in early life stages post oviposition.
+The black curve comes from @MacQuarrie:2011fr, and relates to the competition between late larval stages, predation during pupation, and adult female fecundity.
+Panel (b) exhibits the effect of moisture stress on tree defenses, which leads to higher recruitment for low-density attacks.
+This rapid transition between well-defended (a) and poorly-defended (b) pine tree is the essential seed for sudden eruption of an endemic population that subsequently rushes toward the outbreak equilibrium point $X_p$.
+
+The dynamics of host-defense "relaxation" release are not observable in operational Aerial Detection Survey (aka "red-top") data because they occur at very low attack densities (on the order of 0.4 mass-attacked trees per hectare per year).
+Hence the grayed portion of either panel, a, b.
+Typically, operational survey programs are initiated only after attack densities have surpassed 5 trees per hectare.
+The right-hand side of the graphs contrast that which is observable in operational data, versus the left-hand-side of the graphs (shaded), where careful observation is required.
+This is why Allee effects (positive response to rising density at low density) are never observed in operational field data, as noted by @Trzcinski:2009ae, and it underscores the importance of detailed observations during the endemic stage [@Boone:2011fr].
+In panel (a) host defenses are strong, leading to heavy pitch-out of adult beetles and heavy resinosis of eggs and young larvae (red curve).
+As attack densities rise, the component effect of aggregative cooperation leads to higher component recruitment.
+As attack densities rise further, beyond peak, overall recruitment (dashed purple) is dominated by competitive effects that arise in the late larval recruitment component (dashed blue).
+In the absence of mass-immigration crossing the 4 trees/ha/y threshold, no outbreak is possible because the epidemic niche (purple) is unavailable ("u"") to MPB existing in the endemic niche (dashed black).
+In panel (b), one year later, host defenses have been compromised by drought stress, the component Allee effect of host defenses weakens, recruitment rises, and the critical threshold for outbreak drops from 4 trees/ha/y to 0.4 trees/ha/year.
+Now, populations in the endemic niche that were formerly incapable of mass-attacking at a rate of one tree per hectare per year may explode to a new equilibrium level, $X_p$, as the epidemic niche is now effectively available ("a").
+The process of recruitment curve intersection point "u" moving from position $R < 0$ to position "a", where $R > 0$, is called a "saddle-node bifurcation" and is the formal mathematical definition of outbreak.
+
+The purple dashed parabola in Box 1 panel (a) is the generation recruitment curve for MPB on a well-defended pine tree. 
+The effect of climate warming in the cool climate of Alberta and Saskatchewan is to raise recruitment rates in a manner that is independent of attack density.
+This results in a vertical shift of the generation recruitment curve (panel a):
+
+![](modules/mpbRedTopGrowth/growthCurve_Fig6_Cooke&Carroll_inprep.png)
+
+The amount of vertical shift in MPB recruitment response to climate change is given by models of MPB climatic suitability, such that lower climatic suitability results in a downward shift of the curve, and thus a decrease in eruptive potential.
+
+In summary, the base Boone-MacQuarrie red-top recruitment function’s behaviour is regulated by the fast variables of cooperation, competition, and sudden changes in soil moisture affecting host-tree defenses.
+Weather is a fast stochastic variable affecting beetle winter and summer survival survival; however, these same processes will respond slowly to deterministic changes in climate caused by greenhouse gas concentrations.
+
+#### References
