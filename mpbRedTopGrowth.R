@@ -83,12 +83,10 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
 
 .inputObjects <- function(sim) {
   # ! ----- EDIT BELOW ----- ! #
-  if (!('studyArea' %in% sim$.userSuppliedObjNames)) {
-    f <- file.path(modulePath(sim), "mpbRedTopGrowth", "data", "studyArea.kml")
+  if (!suppliedElsewhere("studyArea")) {
     prj <- paste("+proj=aea +lat_1=47.5 +lat_2=54.5 +lat_0=0 +lon_0=-113",
                  "+x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-    sim$studyArea <- readOGR(f, "studyArea.kml") %>%
-      sp::spTransform(., prj)
+    sim$studyArea <- amc::loadStudyArea(dataPath(sim), "studyArea.kml", prj)
   }
 
   # ! ----- STOP EDITING ----- ! #
