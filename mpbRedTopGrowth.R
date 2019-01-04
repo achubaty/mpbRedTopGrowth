@@ -17,13 +17,13 @@ defineModule(sim, list(
   citation = list(),
   reqdPkgs = list("amc", "data.table", "ggplot2", "quickPlot", "raster", "reproducible"),
   parameters = rbind(
+    defineParameter("dataset", "character", "Boone2001", NA, NA, "Which dataset to use for stand dynamic model fitting. One of 'Boone2001' (default), 'Berryman1979_fit', or 'Berryman1979_forced'. Others to be implemented later."),
+    defineParameter("growthInterval", "numeric", 1, NA, NA, "This describes the interval time between growth events"),
     defineParameter(".plotInitialTime", "numeric", start(sim), NA, NA, "This describes the simulation time at which the first plot event should occur"),
     defineParameter(".plotInterval", "numeric", NA, NA, NA, "This describes the interval between plot events"),
     defineParameter(".saveInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first save event should occur"),
     defineParameter(".saveInterval", "numeric", NA, NA, NA, "This describes the interval between save events"),
-    defineParameter(".useCache", "numeric", FALSE, NA, NA, "Should this entire module be run with caching activated?"),
-    defineParameter("dataset", "character", "Boone2001", NA, NA, "Which dataset to use for stand dynamic model fitting. One of 'Boone2001' (default), 'Berryman1979_fit', or 'Berryman1979_forced'. Others to be implemented later."),
-    defineParameter("growthInterval", "numeric", 1, NA, NA, "This describes the interval time between growth events")
+    defineParameter(".useCache", "logical", FALSE, NA, NA, "Should this entire module be run with caching activated?")
   ),
   inputObjects = bind_rows(
     expectsInput("climateSuitabilityMap", "RasterLayer", "A climatic suitablity map for the current year."),
@@ -48,15 +48,15 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
       ### (use `checkObject` or similar)
 
       # do stuff for this event
-      sim <- sim$mpbRedTopGrowthInit(sim)
-      sim <- sim$mpbRedTopGrowthPlotInit(sim)
+      sim <- Init(sim)
+      sim <- plotInit(sim)
 
       # schedule future event(s)
       #sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "mpbRedTopGrowth", "plot")
     },
     "grow" = {
       # do stuff for this event
-      sim <- sim$mpbRedTopGrowthGrow(sim)
+      sim <- grow(sim)
 
       # schedule future event(s)
       sim <- scheduleEvent(sim, time(sim) + 1, "mpbRedTopGrowth", "grow")
@@ -64,7 +64,7 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
     "plot" = {
       # ! ----- EDIT BELOW ----- ! #
       # do stuff for this event
-      sim <- sim$mpbRedTopGrowthPlot(sim)
+      sim <- plotFn(sim)
 
       # schedule future event(s)
       sim <- scheduleEvent(sim, time(sim) + 1, "mpbRedTopGrowth", "plot")
@@ -72,7 +72,7 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
       # ! ----- STOP EDITING ----- ! #
     },
     "save" = {
-      rtmp <- update(rtmp, cell = sim$massAttacks[, ID], v = sim$massAttacks[, RedTrees])
+      rtmp <- update(rtmp, cell = sim$massAttacksMap[, ID], v = sim$massAttacksMap[, RedTrees])
       writeRaster(r, filename = file.path(outputPath(sim), paste0("massAttacks", time(sim), ".tif")))
     },
     warning(paste("Undefined event type: '", events(sim)[1, "eventType", with = FALSE],
@@ -98,7 +98,7 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
 #   - `modulenameInit()` function is required for initiliazation;
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
-mpbRedTopGrowthInit <- function(sim) {
+Init <- function(sim) {
   # # ! ----- EDIT BELOW ----- ! #
 
   ## create a data.table consisting of the reduced map of current MPB distribution,
@@ -112,13 +112,13 @@ mpbRedTopGrowthInit <- function(sim) {
     #X = mpb.sp[, 1],
     #Y = mpb.sp[, 2],
     NUMTREES = r[ids],
-    CLIMATE = raster::extract(sim$mpbClimateDataMaps, mpb.sp)
+    CLIMATE = raster::extract(sim$climateSuitabilityMap, mpb.sp)
   )
   sim$massAttacksDT[NUMTREES > 0]
   rm(r)
 
   ## growth data
-  sim$growthData <- switch(P(sim)$dataset,
+  mod$growthData <- switch(P(sim)$dataset,
     "Berryman1979_fit" = {
       ## Berryman1979_forced
       data.frame(
@@ -144,7 +144,7 @@ mpbRedTopGrowthInit <- function(sim) {
       )
     },
     "Boone2001" = {
-      data <- read.csv(file.path(modulePath(sim), "mpbRedTopGrowth", "data", "BooneCurveData2.csv"))
+      data <- read.csv(file.path(dataPath(sim), "BooneCurveData2.csv"))
       data$Site <- c(rep("A", 6), rep("B", 6), rep("D", 5), rep("E", 4), rep("F", 4), rep("G", 3))
       data$Year <- c(2000:2005, 2000:2005, 2001:2005, 2002:2005, 2002:2005, 2003:2005)
       data
@@ -152,11 +152,11 @@ mpbRedTopGrowthInit <- function(sim) {
   )
 
   ## define growth function (from regression) for each dataset
-  sim$growthFunction <- switch(P(sim)$dataset,
+  mod$growthFunction <- switch(P(sim)$dataset,
      "Berryman1979_fit" = {
        function(x, s) {
          # TODO: check this works
-         m <- lm(log10Rt ~ poly(log10Xtm1, 3, raw = TRUE), data = sim$growthData)
+         m <- lm(log10Rt ~ poly(log10Xtm1, 3, raw = TRUE), data = mod$growthData)
          s * unname(predict(m, newdata = data.frame(log10Xtm1 = x)))
        }
      },
@@ -181,7 +181,7 @@ mpbRedTopGrowthInit <- function(sim) {
          }
 
          # use 2004 data as baseline for unweakened hosts (i.e., a good year for trees)
-         m <- lm(amc::logit(PropKilled) ~ log(Attacked), data = subset(sim$growthData, Year == "2004"))
+         m <- lm(amc::logit(PropKilled) ~ log(Attacked), data = subset(mod$growthData, Year == "2004"))
          a <- 0.9              # scale parameter; TODO: explain this
          d <- 3                # d: slope parameter [1,Inf)
          r <- 0.2              # r: relative stocking value (0,1)
@@ -198,13 +198,13 @@ mpbRedTopGrowthInit <- function(sim) {
   return(invisible(sim))
 }
 
-mpbRedTopGrowthPlotInit <- function(sim) {
+plotInit <- function(sim) {
   # ! ----- EDIT BELOW ----- ! #
   # do stuff for this event
 
   ### see ggplot docs at http://docs.ggplot2.org/current/
   gg <- if (grepl("Berryman1979", P(sim)$dataset)) {
-    ggplot(sim$growthData) +
+    ggplot(mod$growthData) +
       geom_point(aes(x = log10Xtm1, y = log10Rt, shape = study)) +
       scale_shape(solid = FALSE) +
       xlim(-3.2, 2) + ylim(-1.5, 1.5) +
@@ -221,43 +221,43 @@ mpbRedTopGrowthPlotInit <- function(sim) {
                       formula = y ~ poly(x, 3, raw = TRUE))
         },
         "Berryman1979_forced" = {
-          stat_function(fun = sim$growthFunction, colour = "blue")
+          stat_function(fun = mod$growthFunction, colour = "blue")
         }
       )
   } else if (P(sim)$dataset == "Boone2001") {
-    ggplot(sim$growthData) +
+    ggplot(mod$growthData) +
       xlim(-3.2, 6) + ylim(-1.5, 1.5) +
       labs(title = "Boone et al. (2001)",
            x = "X[t-1] (log trees/ha/yr)",
            y = "R[t] = log x[t]/x[t-1]") +
       geom_hline(aes(yintercept = 0)) +
-      stat_function(fun = sim$growthFunction, args = list(s = 0.9), colour = "purple")
+      stat_function(fun = mod$growthFunction, args = list(s = 0.9), colour = "purple")
   }
 
   ### save the object to the simList
-  sim$mpbRedTopGrowthPlotGG <- gg
+  mod$plotGG <- gg
 
   # ! ----- STOP EDITING ----- ! #
   return(invisible(sim))
 }
 
-mpbRedTopGrowthPlot <- function(sim) {
+plotFn <- function(sim) {
   currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "NUMTREES")
   Plot(currentAttack, addTo = "sim$massAttacksMap")
 
   currentPine <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "PROPPINE")
   Plot(currentPine, addTo = "sim$massAttacksMap")
 
-  scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, "mpbRedTopGrowth", "plot")
+  sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, "mpbRedTopGrowth", "plot")
 
   return(invisible(sim))
 }
 
-mpbRedTopGrowthGrow <- function(sim) {
+grow <- function(sim) {
   ## determine the actual growth based on the actual number of attacked trees/ha
   xt <- function(xtminus1, cs) {
     map.res <- xres(xtminus1)
-    per.ha <- 10^sim$growthFunction(log10(xtminus1), cs) * xtminus1 ## TODO: something is off about this
+    per.ha <- 10^mod$growthFunction(log10(xtminus1), cs) * xtminus1 ## TODO: something is off about this
     return(map.res * per.ha)
   }
 

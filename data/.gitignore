@@ -1,0 +1,8 @@
+## ignore all
+*
+
+## don't ignore
+!CHECKSUMS.txt
+!.gitignore
+!BooneCurveData2.csv
+!studyArea.kml
