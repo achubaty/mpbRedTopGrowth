@@ -99,8 +99,6 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 Init <- function(sim) {
-  # # ! ----- EDIT BELOW ----- ! #
-
   ## create a data.table consisting of the reduced map of current MPB distribution,
   ## proportion pine, and climatic suitability;
   ## use only the start year's non-zero and non-NA data
@@ -136,9 +134,9 @@ Init <- function(sim) {
       data.frame(
         year = c(1:15),
         log10Xtm1 = c(-3.1, -2.75, -2.7, -2.4, -2.3, -1.2, -1, 0.2, 0.9, 0.65,
-                    1.05, 0.95, 1.1, 1.5, 1.85),
+                      1.05, 0.95, 1.1, 1.5, 1.85),
         log10Rt = c(0.35, 0.4, 0.1, -0.4, -0.65, 0.3, 1, 0.75, 1.2, -0.7,
-                      -0.4, 0.2, 0.45, 0.3, -0.78),
+                    -0.4, 0.2, 0.45, 0.3, -0.78),
         study = c(rep("Tunnock 1970", 9), rep("Parker 1973", 6)),
         stringsAsFactors = TRUE
       )
