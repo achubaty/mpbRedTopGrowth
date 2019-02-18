@@ -109,10 +109,10 @@ Init <- function(sim) {
     ID = ids,
     #X = mpb.sp[, 1],
     #Y = mpb.sp[, 2],
-    NUMTREES = r[ids],
+    ATKTREES = r[ids],
     CLIMATE = raster::extract(sim$climateSuitabilityMap, mpb.sp)
   )
-  sim$massAttacksDT[NUMTREES > 0]
+  sim$massAttacksDT[ATKTREES > 0]
   rm(r)
 
   ## growth data
@@ -167,7 +167,7 @@ Init <- function(sim) {
      },
      "Boone2001" = {
        function(x, s) {
-         ## x is number of attacked trees (NUMTREES)
+         ## x is number of attacked trees (ATKTREES)
          ## s is scaling parameter (0,1), based on climate (CLIMATE)
 
          ## mortality from emigration/dispersal
@@ -180,15 +180,15 @@ Init <- function(sim) {
 
          # use 2004 data as baseline for unweakened hosts (i.e., a good year for trees)
          m <- lm(amc::logit(PropKilled) ~ log(Attacked), data = subset(mod$growthData, Year == "2004"))
-         a <- 0.9              # scale parameter; TODO: explain this
-         d <- 3                # d: slope parameter [1,Inf)
-         r <- 0.2              # r: relative stocking value (0,1)
-         fudge2 <- 0.9         # from MacQuarrie 2011 (Fig 3d); TODO: extract from raw data
-         fudge <- fudge2 + 0.3 # somewhat arbitrary; chosen so that the resulting curve passes 1 when flexed
+         a <- 0.9             ## scale parameter; TODO: explain this
+         d <- 3               ## d: slope parameter [1,Inf)
+         r <- 0.2             ## r: relative stocking value (0,1)
+         yint2 <- 0.9         ## from MacQuarrie 2011 (Fig 3d); TODO: extract from raw data
+         yint <- yint2 + 0.3  ## somewhat arbitrary; chosen so that the resulting curve passes 1 when flexed
 
          # resulting function
          log(amc::hill(m$coefficients[[1]], m$coefficients[[2]], exp(a * x))) +
-           (fudge - m_e(r, d, s) - 0.03 * exp(a * x))
+           (yint - m_e(r, d, s) - 0.03 * exp(a * x))
          }
      }
   )
@@ -240,7 +240,7 @@ plotInit <- function(sim) {
 }
 
 plotFn <- function(sim) {
-  currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "NUMTREES")
+  currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "ATKTREES")
   Plot(currentAttack, addTo = "sim$massAttacksMap")
 
   currentPine <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "PROPPINE")
@@ -259,5 +259,5 @@ grow <- function(sim) {
     return(map.res * per.ha)
   }
 
-  sim$massAttacksDT <- sim$massAttacksDT[NUMTREES := xt(NUMTREES, CLIMATE)]
+  sim$massAttacksDT <- sim$massAttacksDT[ATKTREES := xt(ATKTREES, CLIMATE)]
 }
