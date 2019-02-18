@@ -24,8 +24,8 @@ defineModule(sim, list(
   ),
   inputObjects = bind_rows(
     expectsInput("climateSuitabilityMap", "RasterLayer", "A climatic suitablity map for the current year."),
+    expectsInput("currentAttacks", "RasterLayer", "Current year MPB attack map (number of red attacked trees)."),
     expectsInput("massAttacksDT", "data.table", "Current MPB attack map (number of red attacked trees)."),
-    expectsInput("massAttacksMap", "RasterStack", "Historical MPB attack maps (number of red attacked trees)."),
     expectsInput("pineDT", "data.table", "Current lodgepole and jack pine available for MPB."),
     expectsInput("pineMap", "data.table", "Current lodgepole and jack pine available for MPB.")
   ),
@@ -69,7 +69,7 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
       # ! ----- STOP EDITING ----- ! #
     },
     "save" = {
-      rtmp <- update(rtmp, cell = sim$massAttacksMap[, ID], v = sim$massAttacksMap[, RedTrees])
+      rtmp <- update(rtmp, cell = sim$currentAttacks[, ID], v = sim$currentAttacks[, RedTrees])
       writeRaster(r, filename = file.path(outputPath(sim), paste0("massAttacks", time(sim), ".tif")))
     },
     warning(paste("Undefined event type: '", events(sim)[1, "eventType", with = FALSE],
@@ -99,14 +99,13 @@ Init <- function(sim) {
   ## create a data.table consisting of the reduced map of current MPB distribution,
   ## proportion pine, and climatic suitability;
   ## use only the start year's non-zero and non-NA data
-  r <- sim$massAttacksMap[[paste0("X", start(sim))]]
-  ids <- which(!is.na(r[]) | (r[] > 0))
-  mpb.sp <- raster::xyFromCell(r, cell = ids)
+  ids <- which(!is.na(sim$currentAttacks[]) | (sim$currentAttacks[] > 0))
+  mpb.sp <- raster::xyFromCell(sim$currentAttacks, cell = ids)
   sim$massAttacksDT <- data.table(
     ID = ids,
     #X = mpb.sp[, 1],
     #Y = mpb.sp[, 2],
-    ATKTREES = r[ids],
+    ATKTREES = sim$currentAttacks[ids],
     CLIMATE = raster::extract(sim$climateSuitabilityMap, mpb.sp)
   )
   sim$massAttacksDT[ATKTREES > 0]
@@ -237,11 +236,11 @@ plotInit <- function(sim) {
 }
 
 plotFn <- function(sim) {
-  currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "ATKTREES")
-  Plot(currentAttack, addTo = "sim$massAttacksMap")
+  #currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "ATKTREES")
+  #Plot(currentAttack, addTo = "sim$massAttacksMap")
 
-  currentPine <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "PROPPINE")
-  Plot(currentPine, addTo = "sim$massAttacksMap")
+  #currentPine <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "PROPPINE")
+  #Plot(currentPine, addTo = "sim$massAttacksMap")
 
   sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, "mpbRedTopGrowth", "plot")
 
