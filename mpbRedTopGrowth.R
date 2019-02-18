@@ -1,6 +1,3 @@
-
-# Everything in this file gets sourced during simInit, and all functions and objects
-#  are put into the simList. To use objects and functions, use sim$xxx.
 defineModule(sim, list(
   name = "mpbRedTopGrowth",
   description = "Mountain Pine Beetle Red Top Growth Model: Short-run Potential for Establishment, Eruption, and Spread",
@@ -258,6 +255,9 @@ grow <- function(sim) {
     per.ha <- 10^mod$growthFunction(log10(xtminus1), cs) * xtminus1 ## TODO: something is off about this
     return(map.res * per.ha)
   }
+browser()
+  #ids <- sim$massAttacksDT$ID
+  #sim$massAttacksDT <- sim$massAttacksDT[, NUMTREES := sim$pineDT[ID %in% ids]$NUMTREES]
 
   sim$massAttacksDT <- sim$massAttacksDT[ATKTREES := xt(ATKTREES, CLIMATE)]
 }
