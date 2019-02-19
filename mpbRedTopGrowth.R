@@ -109,7 +109,6 @@ Init <- function(sim) {
     CLIMATE = raster::extract(sim$climateSuitabilityMap, mpb.sp)
   )
   sim$massAttacksDT[ATKTREES > 0]
-  rm(r)
 
   ## growth data
   mod$growthData <- switch(P(sim)$dataset,
