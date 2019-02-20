@@ -182,7 +182,7 @@ Init <- function(sim) {
          a <- 0.85            ## a: slope parameter, how quickly the curve drops off
          d <- 3               ## d: slope parameter [1,Inf)
          r <- 0.2             ## r: relative stocking value (0,1) ## TODO: link this to stand depletion
-         s <- 0.5             ## s: scaling parameter (0,1)
+                              ## s: scaling parameter (0,1) -- provided by climate suitability map
          yint2 <- 0.9         ## from MacQuarrie 2011 (Fig 3d); TODO: extract from raw data
          yint <- yint2 + 0.3  ## somewhat arbitrary; chosen so that the resulting curve passes 1 when flexed
 
