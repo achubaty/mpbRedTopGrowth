@@ -25,6 +25,7 @@ defineModule(sim, list(
   inputObjects = bind_rows(
     expectsInput("climateSuitabilityMap", "RasterLayer", "A climatic suitablity map for the current year."),
     expectsInput("currentAttacks", "RasterLayer", "Current year MPB attack map (number of red attacked trees)."),
+    expectsInput("emigrantMap", "RasterLayer", "Current year MPB emmigration map (number of red attacked trees)."),
     expectsInput("massAttacksDT", "data.table", "Current MPB attack map (number of red attacked trees)."),
     expectsInput("pineDT", "data.table", "Current lodgepole and jack pine available for MPB."),
     expectsInput("pineMap", "data.table", "Current lodgepole and jack pine available for MPB.")
@@ -49,14 +50,17 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
       sim <- plotInit(sim)
 
       # schedule future event(s)
-      #sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "mpbRedTopGrowth", "plot")
+      ## growth needs to happen after spread:
+      sim <- scheduleEvent(sim, time(sim), "mpbRedTopGrowth", "grow", eventPriority = 5.5)
+      sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "mpbRedTopGrowth", "plot", eventPriority = 5.75)
     },
     "grow" = {
       # do stuff for this event
       sim <- grow(sim)
 
       # schedule future event(s)
-      sim <- scheduleEvent(sim, time(sim) + 1, "mpbRedTopGrowth", "grow")
+      ## growth needs to happen after spread:
+      sim <- scheduleEvent(sim, time(sim) + 1, "mpbRedTopGrowth", "grow", eventPriority = 5.5)
     },
     "plot" = {
       # ! ----- EDIT BELOW ----- ! #
@@ -64,7 +68,7 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
       sim <- plotFn(sim)
 
       # schedule future event(s)
-      sim <- scheduleEvent(sim, time(sim) + 1, "mpbRedTopGrowth", "plot")
+      sim <- scheduleEvent(sim, time(sim) + 1, "mpbRedTopGrowth", "plot", eventPriority = 5.75)
 
       # ! ----- STOP EDITING ----- ! #
     },
@@ -175,9 +179,10 @@ Init <- function(sim) {
 
          # use 2004 data as baseline for unweakened hosts (i.e., a good year for trees)
          m <- lm(amc::logit(PropKilled) ~ log(Attacked), data = subset(mod$growthData, Year == "2004"))
-         a <- 0.9             ## scale parameter; TODO: explain this
+         a <- 0.85            ## a: slope parameter, how quickly the curve drops off
          d <- 3               ## d: slope parameter [1,Inf)
-         r <- 0.2             ## r: relative stocking value (0,1)
+         r <- 0.2             ## r: relative stocking value (0,1) ## TODO: link this to stand depletion
+         s <- 0.5             ## s: scaling parameter (0,1)
          yint2 <- 0.9         ## from MacQuarrie 2011 (Fig 3d); TODO: extract from raw data
          yint <- yint2 + 0.3  ## somewhat arbitrary; chosen so that the resulting curve passes 1 when flexed
 
