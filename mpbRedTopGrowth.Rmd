@@ -12,6 +12,8 @@ output:
     toc_float: true
 bibliography:
   - ../../bibliography.bib
+editor_options: 
+  chunk_output_type: console
 ---
 
 ### `mpbRedTopGrowth`
