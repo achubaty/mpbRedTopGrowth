@@ -61,4 +61,3 @@ The amount of vertical shift in MPB recruitment response to climate change is gi
 In summary, the base Boone-MacQuarrie red-top recruitment function’s behaviour is regulated by the fast variables of cooperation, competition, and sudden changes in soil moisture affecting host-tree defenses.
 Weather is a fast stochastic variable affecting beetle winter and summer survival survival; however, these same processes will respond slowly to deterministic changes in climate caused by greenhouse gas concentrations.
 
-#### References

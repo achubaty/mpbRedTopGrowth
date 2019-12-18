@@ -14,7 +14,7 @@ defineModule(sim, list(
   citation = list(),
   reqdPkgs = list("amc", "data.table", "ggplot2", "quickPlot", "raster", "reproducible"),
   parameters = rbind(
-    defineParameter("dataset", "character", "Boone2001", NA, NA, "Which dataset to use for stand dynamic model fitting. One of 'Boone2001' (default), 'Berryman1979_fit', or 'Berryman1979_forced'. Others to be implemented later."),
+    defineParameter("dataset", "character", "Boone2011", NA, NA, "Which dataset to use for stand dynamic model fitting. One of 'Boone2011' (default), 'Berryman1979_fit', or 'Berryman1979_forced'. Others to be implemented later."),
     defineParameter("growthInterval", "numeric", 1, NA, NA, "This describes the interval time between growth events"),
     defineParameter(".plotInitialTime", "numeric", start(sim), NA, NA, "This describes the simulation time at which the first plot event should occur"),
     defineParameter(".plotInterval", "numeric", NA, NA, NA, "This describes the interval between plot events"),
@@ -140,7 +140,7 @@ Init <- function(sim) {
         stringsAsFactors = TRUE
       )
     },
-    "Boone2001" = {
+    "Boone2011" = {
       data <- read.csv(file.path(dataPath(sim), "BooneCurveData2.csv"))
       data$Site <- c(rep("A", 6), rep("B", 6), rep("D", 5), rep("E", 4), rep("F", 4), rep("G", 3))
       data$Year <- c(2000:2005, 2000:2005, 2001:2005, 2002:2005, 2002:2005, 2003:2005)
@@ -164,7 +164,7 @@ Init <- function(sim) {
          s * (poly3.params[4] * x^3 + poly3.params[3] * x^2 + poly3.params[2] * x + poly3.params[1])
        }
      },
-     "Boone2001" = {
+     "Boone2011" = {
        function(x, s) {
          ## x is number of attacked trees (ATKTREES)
          ## s is scaling parameter (0,1), based on climate (CLIMATE)
@@ -222,10 +222,10 @@ plotInit <- function(sim) {
           stat_function(fun = mod$growthFunction, colour = "blue")
         }
       )
-  } else if (P(sim)$dataset == "Boone2001") {
+  } else if (P(sim)$dataset == "Boone2011") {
     ggplot(mod$growthData) +
       xlim(-3.2, 6) + ylim(-1.5, 1.5) +
-      labs(title = "Boone et al. (2001)",
+      labs(title = "Boone et al. (2011)",
            x = "X[t-1] (log trees/ha/yr)",
            y = "R[t] = log x[t]/x[t-1]") +
       geom_hline(aes(yintercept = 0)) +
@@ -254,13 +254,16 @@ plotFn <- function(sim) {
 grow <- function(sim) {
   ## determine the actual growth based on the actual number of attacked trees/ha
   xt <- function(xtminus1, cs) {
-    map.res <- xres(xtminus1)
+    browser()
+    map.res <- xres(sim$massAttacksMap) ## TODO: fix this, not scoped in this fn
     per.ha <- 10^mod$growthFunction(log10(xtminus1), cs) * xtminus1 ## TODO: something is off about this
     return(map.res * per.ha)
   }
-browser()
+
   #ids <- sim$massAttacksDT$ID
   #sim$massAttacksDT <- sim$massAttacksDT[, NUMTREES := sim$pineDT[ID %in% ids]$NUMTREES]
 
-  sim$massAttacksDT <- sim$massAttacksDT[ATKTREES := xt(ATKTREES, CLIMATE)]
+  sim$massAttacksDT <- sim$massAttacksDT[, ATKTREES := xt(ATKTREES, CLIMATE)]
+
+  return(invisible(sim))
 }
