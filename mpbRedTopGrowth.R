@@ -97,9 +97,6 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
 }
 
 ## event functions
-#   - follow the naming convention `modulenameEventtype()`;
-#   - `modulenameInit()` function is required for initiliazation;
-#   - keep event functions short and clean, modularize by calling subroutines from section below.
 
 Init <- function(sim) {
   ## create a data.table consisting of the reduced map of current MPB distribution,
@@ -107,6 +104,7 @@ Init <- function(sim) {
   ## use only the start year's non-zero and non-NA data
   ids <- which(!is.na(sim$currentAttacks[]) | (sim$currentAttacks[] > 0))
   mpb.sp <- raster::xyFromCell(sim$currentAttacks, cell = ids)
+
   sim$massAttacksDT <- data.table(
     ID = ids,
     #X = mpb.sp[, 1],
@@ -256,14 +254,10 @@ plotFn <- function(sim) {
 grow <- function(sim) {
   ## determine the actual growth based on the actual number of attacked trees/ha
   xt <- function(xtminus1, cs) {
-    browser()
     map.res <- xres(sim$massAttacksMap) ## TODO: fix this, not scoped in this fn
     per.ha <- 10^mod$growthFunction(log10(xtminus1), cs) * xtminus1 ## TODO: something is off about this
     return(map.res * per.ha)
   }
-
-  #ids <- sim$massAttacksDT$ID
-  #sim$massAttacksDT <- sim$massAttacksDT[, NUMTREES := sim$pineDT[ID %in% ids]$NUMTREES]
 
   sim$massAttacksDT <- sim$massAttacksDT[, ATKTREES := xt(ATKTREES, CLIMATE)]
 
