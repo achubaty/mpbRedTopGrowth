@@ -22,7 +22,7 @@ defineModule(sim, list(
     defineParameter(".saveInterval", "numeric", NA, NA, NA, "This describes the interval between save events"),
     defineParameter(".useCache", "logical", FALSE, NA, NA, "Should this entire module be run with caching activated?")
   ),
-  inputObjects = bind_rows(
+  inputObjects = bindrows(
     expectsInput("climateSuitabilityMap", "RasterLayer", "A climatic suitablity map for the current year."),
     expectsInput("currentAttacks", "RasterLayer", "Current year MPB attack map (number of red attacked trees)."),
     expectsInput("emigrantMap", "RasterLayer", "Current year MPB emmigration map (number of red attacked trees)."),
@@ -30,7 +30,7 @@ defineModule(sim, list(
     expectsInput("pineDT", "data.table", "Current lodgepole and jack pine available for MPB."),
     expectsInput("pineMap", "data.table", "Current lodgepole and jack pine available for MPB.")
   ),
-  outputObjects = bind_rows(
+  outputObjects = bindrows(
     createsOutput("massAttacksDT", "data.table", "Current MPB attack map (number of red attacked trees)."),
     createsOutput("pineDT", "data.table", "Current lodgepole and jack pine available for MPB.")
   )
