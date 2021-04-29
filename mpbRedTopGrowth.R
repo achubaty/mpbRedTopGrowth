@@ -255,7 +255,8 @@ plotFn <- function(sim) {
 
 grow <- function(sim) {
   ## determine the actual growth based on the actual number of attacked trees/ha
-  sim$massAttacksDT[, ATKTREES := xt(ATKTREES, CLIMATE, P(sim)$dataset, sim$massAttacksMap, mod$growthData)]
+  sim$massAttacksDT[, ATKTREES := xt(ATKTREES, CLIMATE, P(sim)$dataset,
+                                     sim$massAttacksMap, mod$growthData)]
 
   return(invisible(sim))
 }
