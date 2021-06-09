@@ -242,11 +242,11 @@ plotInit <- function(sim) {
 }
 
 plotFn <- function(sim) {
-  #currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "ATKTREES")
-  #Plot(currentAttack, addTo = "sim$massAttacksMap")
+  #currentAttack <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksStack, "ATKTREES")
+  #Plot(currentAttack, addTo = "sim$massAttacksStack")
 
-  #currentPine <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksMap, "PROPPINE")
-  #Plot(currentPine, addTo = "sim$massAttacksMap")
+  #currentPine <- amc::dt2raster(sim$massAttacksDT, sim$massAttacksStack, "PROPPINE")
+  #Plot(currentPine, addTo = "sim$massAttacksStack")
 
   sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, "mpbRedTopGrowth", "plot")
 
@@ -256,7 +256,7 @@ plotFn <- function(sim) {
 grow <- function(sim) {
   ## determine the actual growth based on the actual number of attacked trees/ha
   sim$massAttacksDT[, ATKTREES := xt(ATKTREES, CLIMATE, P(sim)$dataset,
-                                     sim$massAttacksMap, mod$growthData)]
+                                     sim$massAttacksStack, mod$growthData)]
 
   return(invisible(sim))
 }
