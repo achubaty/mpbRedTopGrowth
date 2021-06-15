@@ -25,7 +25,7 @@ defineModule(sim, list(
     defineParameter(".useCache", "logical", FALSE, NA, NA, "Should this entire module be run with caching activated?")
   ),
   inputObjects = bindrows(
-    expectsInput("climateSuitabilityMap", "RasterLayer", "A climatic suitablity map for the current year."),
+    expectsInput("climateSuitabilityMaps", "RasterStack", "A time series of climatic suitablity RasterLayers, each with previx 'X' and the year, e.g., 'X2010'"),
     expectsInput("currentAttacks", "RasterLayer", "Current year MPB attack map (number of red attacked trees)."),
     expectsInput("emigrantMap", "RasterLayer", "Current year MPB emmigration map (number of red attacked trees)."),
     expectsInput("massAttacksDT", "data.table", "Current MPB attack map (number of red attacked trees)."),
@@ -53,7 +53,7 @@ doEvent.mpbRedTopGrowth <- function(sim, eventTime, eventType, debug = FALSE) {
 
       # schedule future event(s)
       ## growth needs to happen after spread:
-      sim <- scheduleEvent(sim, time(sim), "mpbRedTopGrowth", "grow", eventPriority = 5.5)
+      sim <- scheduleEvent(sim, time(sim), "mpbRedTopGrowth", "grow", eventPriority = 4.5)
       sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "mpbRedTopGrowth", "plot", eventPriority = 5.75)
     },
     "grow" = {
@@ -107,12 +107,13 @@ Init <- function(sim) {
   ids <- which(!is.na(sim$currentAttacks[]) | (sim$currentAttacks[] > 0))
   mpb.sp <- raster::xyFromCell(sim$currentAttacks, cell = ids)
 
+  browser()
   sim$massAttacksDT <- data.table(
     ID = ids,
     #X = mpb.sp[, 1],
     #Y = mpb.sp[, 2],
     ATKTREES = sim$currentAttacks[ids],
-    CLIMATE = raster::extract(sim$climateSuitabilityMap, mpb.sp)
+    CLIMATE = raster::extract(sim$climateSuitabilityMaps, mpb.sp)
   )
   sim$massAttacksDT[ATKTREES > 0]
 
@@ -254,8 +255,9 @@ plotFn <- function(sim) {
 }
 
 grow <- function(sim) {
+  browser()
   ## determine the actual growth based on the actual number of attacked trees/ha
-  sim$massAttacksDT[, ATKTREES := xt(ATKTREES, CLIMATE, P(sim)$dataset,
+  sim$massAttacksDT[, ATKTREEStplus1 := xt(ATKTREES, CLIMATE, P(sim)$dataset,
                                      sim$massAttacksStack, mod$growthData)]
 
   return(invisible(sim))
