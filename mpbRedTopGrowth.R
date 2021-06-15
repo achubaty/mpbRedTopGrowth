@@ -12,7 +12,7 @@ defineModule(sim, list(
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list(),
-  reqdPkgs = list("amc", "data.table", "ggplot2", "quickPlot", "raster",
+  reqdPkgs = list("achubaty/amc", "data.table", "ggplot2", "quickPlot", "raster",
                   "PredictiveEcology/reproducible@development (>= 1.2.6.9017)",
                   "PredictiveEcology/mpbutils (>= 0.1.1)"),
   parameters = rbind(
